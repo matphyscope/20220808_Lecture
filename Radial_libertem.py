@@ -3,15 +3,13 @@ import numpy as np
 import numba
 
 def mean_center(fig, range_x, range_y):
-    """calculates COM of a 2d image and returns center coordinates"""
-    fig_x = np.sum(fig, axis=1)
-    fig_y = np.sum(fig, axis=0)
-    x = np.dot(fig_x, range_x)
-    weight = np.sum(fig_x)
-    x = x/weight
-    y = np.dot(fig_y, range_y)
-    y = y/weight
-    
+    """calculates COM of a 2d image and returns center coordinates (x=col, y=row)"""
+    # fix: was using axis=1 (row projection) dotted with range_x (col indices) - axes were swapped
+    fig_col = np.sum(fig, axis=0)  # column projection, shape (ncols,)
+    fig_row = np.sum(fig, axis=1)  # row projection, shape (nrows,)
+    weight = np.sum(fig_col)
+    x = np.dot(fig_col, range_x) / weight  # x-center (column direction)
+    y = np.dot(fig_row, range_y) / weight  # y-center (row direction)
     return x, y
 
 @numba.njit(inline="always")
@@ -53,8 +51,9 @@ class RadialIntegration(UDF):
         }
     
     def process_frame(self, frame):
-        x, y = mean_center(frame,range_x=self.task_data.range_x, range_y=self.task_data.range_y)
-        self.results.radial[:] = radial_bins(frame, x, y, frame.shape)
+        x, y = mean_center(frame, range_x=self.task_data.range_x, range_y=self.task_data.range_y)
+        # fix: radial_bins signature is (arr, cy, cx, ...), so pass y (row center) as cy, x (col center) as cx
+        self.results.radial[:] = radial_bins(frame, y, x, frame.shape)
 
 class CoMUDF(UDF):
     def get_task_data(self):

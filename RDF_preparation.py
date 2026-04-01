@@ -101,37 +101,6 @@ def annular_average(distance, value, radius_length):
     acc_number[np.where(acc_number == 0)] = 1e5
     radial_average = np.divide(acc_weight, acc_number)
     #radial_average[np.where(radial_average == 0)] = None
-    '''
-    fig1 = Figure()
-    fig1.suptitle('acc_weight')
-    fig1.add_subplot(111).plot(acc_weight)
-    RDF_TK_GUI.ImageWindow(fig1)
-
-    fig2 = Figure()
-    fig2.suptitle('acc_number')
-    fig2.add_subplot(111).plot(acc_number)
-    RDF_TK_GUI.ImageWindow(fig2)
-
-    fig3 = Figure()
-    fig3.suptitle('divide')
-    fig3.add_subplot(111).plot(np.divide(acc_weight, acc_number))
-    RDF_TK_GUI.ImageWindow(fig3)
-
-    fig4 = Figure()
-    fig4.suptitle('gragient')
-    m = np.divide(acc_weight, acc_number)
-    fig4.add_subplot(111).plot(m[0:-1]-m[1:])
-    RDF_TK_GUI.ImageWindow(fig4)
-    '''
-    '''
-    plt.subplot(311)
-    plt.plot(acc_weight)
-    plt.subplot(312)
-    plt.plot(acc_number)
-    plt.subplot(313)
-    plt.plot(np.divide(acc_weight, acc_number))
-    plt.show()
-    '''
     return radial_average
 
 
@@ -151,7 +120,7 @@ def auto_beam_stopper(image, initial_point, alpha_low=0.05, alpha_high=0.9):
     fill_in = signal.convolve2d(fill_in, np.ones((21, 21)))[10:-10, 10:-10]
     fill_in = np.minimum(fill_in, 1)
     fill_in = 1 - fill_in
-    fill_in[np.where(fill_in == 0)] = None
+    fill_in[np.where(fill_in == 0)] = np.nan  # fix: was None, which is invalid for numpy array assignment
     filted_fig = np.multiply(fill_in, fig)
     print('auto_beam_stopper:', time.time()-timer)
     return filted_fig, fill_in
@@ -187,11 +156,8 @@ def test_hough(fig):
     mask = small_fig * 0
     mask[np.where(small_fig > num75[2])] = 1
 
-    #small_fig = np.maximum(small_fig-num75[2], 0)
-    #small_fig = np.minimum(small_fig, 1)
-
-    low_thres = 0.1 #small_fig.max() * 0.04
-    high_thres = 0.9 #small_fig.max() * 0.05
+    low_thres = 0.1
+    high_thres = 0.9
     edges = canny(mask, sigma=1, low_threshold=low_thres, high_threshold=high_thres)
 
     index = np.where(edges)
@@ -206,12 +172,7 @@ def test_hough(fig):
     # Select the most prominent circle
     accums, cx, cy, radii = hough_circle_peaks(hough_res, hough_radii,
                                                total_num_peaks=1)
-    #hough_res = hough_circle(edges, radii)
-    #accums, cx, cy, radii = hough_circle_peaks(hough_res, radii,
-    #                                           total_num_peaks=1)
     print(cx, cy, radii)
-    #plt.imshow(np.multiply(np.multiply(mask, small_fig),edges))
-    #plt.show()
     x = small_fig_y_low + cx + 1
     y = small_fig_x_low + cy + 1
     return x[0], y[0], radii[0]
@@ -219,11 +180,9 @@ def test_hough(fig):
 def test_hough_2(fig):
     """sobel filtering with hough transform"""
     
-    #a = time.time()
     fig = np.array(fig, dtype=float)
     
     edges = sobel(fig)
-    #plt.imsave("edges.png",edges[230:260,260:285])
     mask = edges * 0
     mask[np.where(edges > np.max(edges)*0.75)] = 1
     index = np.where(mask)
@@ -234,14 +193,10 @@ def test_hough_2(fig):
     stop=rad+5
     hough_radii = np.arange(start,stop)
     hough_res = hough_circle(mask, hough_radii)
-    #for i in np.arange(start,stop):
-    #    plt.imsave(str(i)+"hough.png",hough_res[i-start])
     # Select the most prominent circle
     circle=np.unravel_index(np.argmax(hough_res, axis=None), hough_res.shape)
     radius, x, y = circle[0]+start, circle[1],circle[2]
     print(x, y, radius)
-    #print("edge detection in: ")
-    #print((time.time()-a)*1000)
     return x, y, radius
 
 def CoM_Map(dat, MaxValue):
@@ -259,9 +214,6 @@ def CoM_Map(dat, MaxValue):
             temp_fig[temp_fig>max_current] = max_current
             # calculate the center of the thresholded image
             CenterX[i,j], CenterY[i,j] = mean_center(temp_fig)
-    #Correct the center x and y using their average
-    #CenterX = CenterX-np.average(CenterX)
-    #CenterY = CenterY-np.average(CenterY)
     return np.array([CenterY, CenterX])
 
 
@@ -297,21 +249,8 @@ def calc_center_map(data_4d):
             cx[i,j], cy[i,j] = circle[1],circle[2]
     cx += center[0]-s
     cy += center[1]-s
-    #np.savetxt("cx.txt",cx,fmt='%1.0f')
-    #np.savetxt("cy.txt",cy,fmt='%1.0f')
     return np.array([cx,cy]), r
 
-# def mean_center(fig):
-#     """calculates COM of a 2d image and returns center coordinates"""
-#     fig = np.array(fig, dtype=float)
-#     fig_x = np.sum(fig, axis=1)
-#     fig_y = np.sum(fig, axis=0)
-#     x = np.dot(fig_x, np.arange(1, np.size(fig_x)+1))
-#     weight = np.sum(fig_x)
-#     x = x/weight
-#     y = np.dot(fig_y, np.arange(1, np.size(fig_y)+1))
-#     y = y/weight
-    #     return int(x), int(y)
 
 def mean_center(Img):
     one_x = np.ones(Img.shape[1])
@@ -321,7 +260,6 @@ def mean_center(Img):
    
     a = np.array([n_y,one_y])
     b = np.transpose([one_x,n_x])
-    #Img[Img<0] = 0 #set all negative value to zero
     Img = np.clip(Img, a_min=0, a_max=None) #set all negative value to zero
     c = a@Img@b # @ means Matrix multiplication
     
@@ -362,7 +300,7 @@ if __name__ == '__main__':
                 break
     file_name = 'test1'
 
-    threshold = 990 #  512*1024*1024/10
+    threshold = 990
     num_file = len(data) // threshold + 1
 
     with open('test2', 'w+') as f:

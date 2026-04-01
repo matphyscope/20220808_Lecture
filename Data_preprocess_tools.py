@@ -34,11 +34,7 @@ def bin2D(array, factor, dtype=np.float64):
     return binned_ar
 
 
-def Threshold_defect_pixels (data, threshold):
-    position = np.argwhere(data[0]>threshold)
-    data[:,position[:,0],position[:,1]]=0 
+def Threshold_defect_pixels(data, threshold):
+    position = np.argwhere(data[0] > threshold)
+    data[:, position[:, 0], position[:, 1]] = 0
     return data
-
-d = np.zeros((data.shape[0],data.shape[1]//2,data.shape[2]//2))
-for i in range(data.shape[0]):
-    d[i] = bin2D(data[i],2, dtype=data.dtype)

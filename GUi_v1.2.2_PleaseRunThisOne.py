@@ -129,30 +129,23 @@ class MainGui(tk.Tk):
             frame.pack_forget()
 
     def pre_return_info(self, pre_dict_info=None):
-        if pre_dict_info is None:
-            print('Error: no preprocessing data available')
-            return
-        if pre_dict_info.get('center') is None:
-            print('Error: center position is not set. Please find center first.')
-            return
-        if pre_dict_info.get('radius') is None:
-            print('Error: radius is not set. Please find beam stopper first.')
-            return
-        self.frame[ProfileMapFrame].path = pre_dict_info['path']
-        if pre_dict_info['path'] is not None:
+        try:
+            self.frame[ProfileMapFrame].path = pre_dict_info['path']
             self.frame[ProfileMapFrame].mode = pre_dict_info['path'][-3:]
-        self.frame[ProfileMapFrame].center = pre_dict_info['center']
-        self.frame[ProfileMapFrame].sv_center_x.set('{0:.2f}'.format(pre_dict_info['center'][0]))
-        self.frame[ProfileMapFrame].sv_center_y.set('{0:.2f}'.format(pre_dict_info['center'][1]))
-        self.frame[ProfileMapFrame].sv_radius.set('{0:.2f}'.format(pre_dict_info['radius']))
-        self.frame[ProfileMapFrame].sv_shape_x.set(pre_dict_info['scanning_shape'][0])
-        self.frame[ProfileMapFrame].sv_shape_y.set(pre_dict_info['scanning_shape'][1])
-        self.frame[ProfileMapFrame].process_size = pre_dict_info['process_size']
-        self.frame[ProfileMapFrame].beam_stopper = pre_dict_info['beam_stopper']
-        self.frame[ProfileMapFrame].shape_beam_stopper = np.shape(pre_dict_info['beam_stopper'])
-        self.frame[ProfileMapFrame].delete_mask = pre_dict_info['delete_mask']
-        self.frame[ProfileMapFrame].center_map = pre_dict_info['center_map']
-        self.frame[ProfileMapFrame].calculate_profile_map(pre_dict_info['process_area'])
+            self.frame[ProfileMapFrame].center = pre_dict_info['center']
+            self.frame[ProfileMapFrame].sv_center_x.set('{0:.2f}'.format(pre_dict_info['center'][0]))
+            self.frame[ProfileMapFrame].sv_center_y.set('{0:.2f}'.format(pre_dict_info['center'][1]))
+            self.frame[ProfileMapFrame].sv_radius.set('{0:.2f}'.format(pre_dict_info['radius']))
+            self.frame[ProfileMapFrame].sv_shape_x.set(pre_dict_info['scanning_shape'][0])
+            self.frame[ProfileMapFrame].sv_shape_y.set(pre_dict_info['scanning_shape'][1])
+            self.frame[ProfileMapFrame].process_size = pre_dict_info['process_size']
+            self.frame[ProfileMapFrame].beam_stopper = pre_dict_info['beam_stopper']
+            self.frame[ProfileMapFrame].shape_beam_stopper = np.shape(pre_dict_info['beam_stopper'])
+            self.frame[ProfileMapFrame].delete_mask = pre_dict_info['delete_mask']
+            self.frame[ProfileMapFrame].center_map = pre_dict_info['center_map']
+            self.frame[ProfileMapFrame].calculate_profile_map(pre_dict_info['process_area'])
+        except TypeError:
+            pass
 
     def profile_map_return_info(self, mode=1, dict_info=None):
         self.frame[RdfFrame].read_profile(path=0, profile=dict_info['profile'])
@@ -632,8 +625,8 @@ class PreProcessingFrame(tk.Frame):
             data_shape = self.ask_userinfo()
             print(data_shape)
             if data_shape is not None:
-                self.sv_map_y.set(str(data_shape[0]))
-                self.sv_map_x.set(str(data_shape[1]))
+                self.sv_map_y.set(str(data_shape[1]))
+                self.sv_map_x.set(str(data_shape[0]))
 
         temp_path = askopenfilename(filetypes=(('EMPAD file', '*.raw'),
                                                ('Numpy File', '*.npy'),
@@ -1199,7 +1192,7 @@ class RdfFrame(tk.Frame):
                                                         len(self.profile))
             self.pixel_end_sv.set(new_para_dict['pixel_end'])
             if new_para_dict['pixel_end'] <= new_para_dict['pixel_begin']:
-                new_para_dict['pixel_begin'] = new_para_dict['pixel_end']-1
+                new_para_dict['pixel_begin'] = new_para_dict['phi_fit_end']-1
                 self.pixel_begin_sv.set(new_para_dict['pixel_begin'])
             self.rdfpara_dict = new_para_dict
             temp = dict2struct(self.rdfpara_dict, RdfParaData(True))
@@ -1390,9 +1383,6 @@ class RdfFrame(tk.Frame):
             self.damping_strength_entry.config(state='disabled')
 
     def transfer_para(self):
-        new_para_dict = self.read_input()
-        if self.check_para(new_para_dict):
-            self.rdfpara_dict = new_para_dict
         self.parent.rdf_return_info(self.rdfpara_dict)
 
     def read_input(self):
@@ -1935,8 +1925,6 @@ class ProfileMapFrame(tk.Frame):
         return axes
 
     def transfer_data(self, mode=1):
-        if self._profile is None and self._profile_map is not None:
-            self._profile = np.nanmean(self._profile_map, axis=(0, 1))
         if self.process_size is None:
             scanning_shape = [int(self.sv_shape_x.get()), int(self.sv_shape_y.get())]
         else:
@@ -2243,7 +2231,7 @@ class RdfMapFrame(tk.Frame):
                 shape_y = np.minimum(shape_y, map_shape[1])
                 self.sv_shape_x.set(shape_x)
                 self.sv_shape_y.set(shape_y)
-                return _rdf_map[0:shape_x, 0:shape_y, :], shape_x, shape_y
+                return _rdf_map[0:shape_x+1, 0:shape_y+1, :], shape_x, shape_y
             else:
                 return _rdf_map, shape_x, shape_y
         else:

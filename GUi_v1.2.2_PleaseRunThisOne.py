@@ -30,5 +30,3 @@ except:
   print("Libertem is missing")
   
 global data_4d, global_radius
-
-PLACEHOLDER_REPLACED_BY_SCRIPT

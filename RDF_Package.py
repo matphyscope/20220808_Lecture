@@ -43,7 +43,7 @@ def rdf_cal(RDF_parameter, mode='struct', data_trans=1, *args, **kwargs):
     # calibration todo///
     califactor = 0.0021745
     '''
-    if mode is 'dict':
+    if mode == 'dict':  # fix: was 'mode is 'dict'' which is incorrect in Python 3
         '''
         element = kwargs['element']
         percentage = kwargs['composition']
@@ -54,7 +54,7 @@ def rdf_cal(RDF_parameter, mode='struct', data_trans=1, *args, **kwargs):
         pixel_begin = kwargs['pixel_begin']
         pixel_end = kwargs['pixel_end']
         pixel_adjust_b = kwargs['pixel_adjust_begin']
-        pixel_adjust_e = kwargs['ixel_adjust_end']
+        pixel_adjust_e = kwargs['pixel_adjust_end']
         pixel_adjust = kwargs['pixel_adjust']
         smooth_en = kwargs['smooth_en']
         smooth_strength = kwargs['smooth_strength']

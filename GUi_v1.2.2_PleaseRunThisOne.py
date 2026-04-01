@@ -622,7 +622,7 @@ class PreProcessingFrame(tk.Frame):
         path = askopenfilename(filetypes=(('Numpy File', '*.npy'),
                                             ("All Files", "*.*")),
                                     title="Choose a file.")
-        if path is not '':
+        if path != '':
             center_map = np.load(path, 'rb+')
             self.center_map=center_map
             self.plot_map()
@@ -1349,7 +1349,7 @@ class RdfFrame(tk.Frame):
     def load_para(self):
         path = askopenfilename(filetypes=(("csv File", "*.csv"), ("All Files", "*.*")),
                                title='Choose a file')
-        if path is not '':
+        if path != '':
             file = open(path, 'rb+')
             self.rdfpara_dict = pickle.load(file)
             self.update_rdf_para()
@@ -1419,7 +1419,7 @@ class RdfFrame(tk.Frame):
         for key in self.userinfo.keys():
             value = self.userinfo[key]
             try:
-                if len(value) == 1 and key is not 'element' and key is not 'composition':
+                if len(value) == 1 and key != 'element' and key != 'composition':
                     self.userinfo[key] = value[0]
             except:
                 pass
@@ -2114,7 +2114,7 @@ class RdfMapFrame(tk.Frame):
     def import_parameter(self):
         path = askopenfilename(filetypes=(("csv File", "*.csv"), ("All Files", "*.*")),
                                title='Choose a file')
-        if path is not '':
+        if path != '':
             file = open(path, 'rb+')
             self.rdfpara_dict = pickle.load(file)
             #self.update_rdf_para()

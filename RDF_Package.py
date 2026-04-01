@@ -397,7 +397,7 @@ def modification_phi(phi, smooth_range, pixel_begin, pixel_end, parameter_s,
         else:
             yfit_nosmo = phi * 0
     else:
-        RIF_nosmo = None
+        yfit_nosmo = None
     return RIF, yfit, phi_without_smooth, yfit_nosmo
 
 
@@ -560,10 +560,10 @@ def ft_rif(RIF, phi, parameter_s, yfit, L, rn, califactor, pixel_begin, pixel_en
                                              np.sin(2 * np.pi * sr_matrix)) * califactor
     else:
         G_corrected_nod = None
-    RIF_pristine = phi[0:pixel_end+1+pixel_adjust_e] - yfit[0:pixel_end+1+pixel_adjust_e]
+    RIF_pristine = phi[0:pixel_end+pixel_adjust_e] - yfit[0:pixel_end+pixel_adjust_e]
     if phi_without_smooth is not None:
-        RIF_pristine_nos = phi_without_smooth[0:pixel_end+1+pixel_adjust_e] -\
-                           yfit_nosmo[0:pixel_end+1+pixel_adjust_e]
+        RIF_pristine_nos = phi_without_smooth[0:pixel_end+pixel_adjust_e] -\
+                           yfit_nosmo[0:pixel_end+pixel_adjust_e]
     else:
         RIF_pristine_nos = None
     return G[0, :], G_corrected, G_corrected_nod, RIF_pristine, RIF_pristine_nos, r, RIF_damped

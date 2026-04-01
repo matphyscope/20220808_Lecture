@@ -8,7 +8,7 @@ def read_xyz_file(path):
     coords = np.zeros((1, 3))
     with open(path, 'r') as f:
         line_data = f.readline()
-        while line_data is not '':
+        while line_data != '':
             try:
                 int(line_data)
                 line_data = f.readline()
